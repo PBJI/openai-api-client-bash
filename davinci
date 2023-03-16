@@ -1,0 +1,86 @@
+#!/bin/bash
+
+# Set default values
+OUTPUT_FILE="response.txt"
+MODEL="text-davinci-002"
+TEMPERATURE=0.7
+MAX_TOKENS=1500
+TOP_P=1
+FREQUENCY_PENALTY=0
+PRESENCE_PENALTY=0
+API_KEY=""
+USE_GLOBAL_KEY=false
+
+# Parse command line arguments
+while getopts ":k:g:o:m:t:x:p:f:r:" opt; do
+  case $opt in
+    k) API_KEY="$OPTARG";;
+    g) USE_GLOBAL_KEY=true;;
+    o) OUTPUT_FILE="$OPTARG";;
+    m) MODEL="$OPTARG";;
+    t) TEMPERATURE="$OPTARG";;
+    x) MAX_TOKENS="$OPTARG";;
+    p) TOP_P="$OPTARG";;
+    f) FREQUENCY_PENALTY="$OPTARG";;
+    r) PRESENCE_PENALTY="$OPTARG";;
+    \?)
+      echo "Invalid option: -$OPTARG" >&2
+      exit 1
+      ;;
+    :)
+      echo "Option -$OPTARG requires an argument." >&2
+      exit 1
+      ;;
+  esac
+done
+
+# Check if the API key is provided
+if [[ -n "$API_KEY" ]]; then
+  # If provided, use the provided API key and save it globally if desired
+  echo "Using provided API key: $API_KEY"
+  if [[ "$USE_GLOBAL_KEY" == true ]]; then
+    echo "Saving API key globally"
+    echo "export OPENAI_API_KEY=$API_KEY" >> "$HOME/.bash_profile"
+    source "$HOME/.bash_profile"
+  fi
+else
+  # If not provided, try to retrieve the key from the bash profile or global environment variables
+  if [[ -n "$BASH_VERSION" ]]; then
+    source "$HOME/.bash_profile"
+  fi
+  if [[ -z "$OPENAI_API_KEY" ]]; then
+    echo "Error: API key not provided and not found in global environment variables or bash profile."
+    exit 1
+  fi
+  API_KEY="$OPENAI_API_KEY"
+  echo "Using global API key: $API_KEY"
+fi
+
+# Prompt for input
+PROMPT=$(cat -)
+PROMPT=$(echo "$PROMPT" | sed 's/"/\\\\"/g')  # Escape double quotes in prompt
+PROMPT=$(echo "$PROMPT" | sed 's/$/\\n/g')  # Escape newline characters in prompt
+
+# Remove control characters and write prompt to file with date/time stamp
+PROMPT=$(echo "$PROMPT" | tr -d '[:cntrl:]')
+DATE=$(date '+%Y-%m-%d %H:%M:%S')
+PROMPT_WITH_DATE="[${DATE}]: $PROMPT"
+
+echo "_____________________________________________________________________________________________________" >> "$OUTPUT_FILE"
+echo -e "$PROMPT_WITH_DATE" >> "$OUTPUT_FILE"
+echo $'\n'"Processing..."
+# Make the API request and save response to file
+DATA="{\"prompt\": \"$PROMPT\",\"model\": \"$MODEL\", \"temperature\": $TEMPERATURE, \"max_tokens\": $MAX_TOKENS, \"top_p\": $TOP_P, \"frequency_penalty\": $FREQUENCY_PENALTY, \"presence_penalty\": $PRESENCE_PENALTY}"
+RESPONSE=$(curl -s -X POST \
+     -H "Content-Type: application/json" \
+     -H "Authorization: Bearer ${API_KEY}" \
+     -d "$DATA" \
+     https://api.openai.com/v1/completions | jq '.choices[].text' | sed 's/"//g')
+
+# Write response to file with date/time stamp
+RESPONSE=$(echo -e "$RESPONSE")
+DATE=$(date '+%Y-%m-%d %H:%M:%S')
+echo "[${DATE}] RESPONSE: ${RESPONSE}" >> "$OUTPUT_FILE"
+echo "_____________________________________________________________________________________________________" >> "$OUTPUT_FILE"
+echo "Response saved to $OUTPUT_FILE"
+
