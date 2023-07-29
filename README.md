@@ -4,6 +4,10 @@
 This bash script is designed to interact with the OpenAI API and make requests for text generation. The script takes in various command line arguments and options, prompts the user for input, and saves the generated text to a file along with a timestamp.
 Command Line Arguments
 
+### Global Environment Variable
+
+Before one use this script, it is reconmmended to set the OPENAI_API_KEY=$API_KEY in the environment variable. This will ensure the script regardless of any explicit methods of providing the API KEY to the program. Remember the environment variable name should be OPENAI_API_KEY and its value should be the API KEY without any other special characters.
+
 ### The script takes the following command line arguments:
 
 -k [API_KEY] : Sets the OpenAI API key to use for making requests. This argument is optional, but if not provided, the script will attempt to retrieve the key from the bash profile or global environment variables.
