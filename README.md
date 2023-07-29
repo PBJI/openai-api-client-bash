@@ -53,7 +53,7 @@ It can format the output with timestamps and append it at the end of the output 
 
 This script cannot work with completion models or chat based models of OpenAI.
 
-The parameters that can be configured for API requests are limited and do contain all the parameters made available to developers via OpenAI.
+The parameters that can be configured for API requests are limited and do not contain all the parameters made available to developers via OpenAI.
 
 # Notes
 
