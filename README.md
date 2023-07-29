@@ -45,6 +45,16 @@ If an invalid command line argument is provided, the script will display an erro
 
 If an option requires an argument, but no argument is provided, the script will display an error message and exit.
 
+# Limitations / Capabilities
+
+This script can only work with text based models of OpenAI.
+
+It can format the output with timestamps and append it at the end of the output file (manually set or the default one)
+
+This script cannot work with completion models or chat based models of OpenAI.
+
+The parameters that can be configured for API requests are limited and do contain all the parameters made available to developers via OpenAI.
+
 # Notes
 
 The script uses the "jq" command to parse the API response and extract the generated text. If "jq" is not installed on your system, the script will not work properly.
